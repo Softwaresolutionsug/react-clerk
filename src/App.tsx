@@ -1,35 +1,37 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Link, Outlet, useNavigate } from "react-router-dom";
+import { ClerkProvider, SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
 
-function App() {
-  const [count, setCount] = useState(0)
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+if (!PUBLISHABLE_KEY) {
+  throw new Error("Clerk publishable key not found");
 }
 
-export default App
+export default function App() {
+  const navigate = useNavigate();
+
+  return (
+    <ClerkProvider 
+    routerPush={(to) => navigate(to)}
+    routerReplace={(to) => navigate(to, { replace: true })}
+    publishableKey={PUBLISHABLE_KEY} afterSignOutUrl={'/'}>
+      <header>
+        <div>
+          <div>
+            <Link to="/">Home</Link>
+            <Link to="/dashboard">Dashboard</Link>
+          </div>
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
+          <SignedOut>
+            <Link to="/sign-in">Sign In</Link>
+          </SignedOut>
+        </div>
+      </header>
+      <main>
+        <Outlet />
+      </main>
+    </ClerkProvider>
+  );
+}
